@@ -335,9 +335,15 @@ func (m *Mapper) graphqlField(f *descriptor.Field, input bool) *graphql.Field {
 			field.Modifiers = graphql.TypeModifierNonNull
 		}
 
-	case pb.FieldDescriptorProto_TYPE_FLOAT, pb.FieldDescriptorProto_TYPE_DOUBLE,
-		pb.FieldDescriptorProto_TYPE_INT32, pb.FieldDescriptorProto_TYPE_UINT32, pb.FieldDescriptorProto_TYPE_SINT32,
+	case pb.FieldDescriptorProto_TYPE_INT32, pb.FieldDescriptorProto_TYPE_UINT32, pb.FieldDescriptorProto_TYPE_SINT32,
 		pb.FieldDescriptorProto_TYPE_FIXED32, pb.FieldDescriptorProto_TYPE_SFIXED32:
+
+		field.TypeName = graphql.ScalarInt.TypeName()
+		if !nullableScalars {
+			field.Modifiers = graphql.TypeModifierNonNull
+		}
+
+	case pb.FieldDescriptorProto_TYPE_FLOAT, pb.FieldDescriptorProto_TYPE_DOUBLE:
 
 		field.TypeName = graphql.ScalarFloat.TypeName()
 		if !nullableScalars {
