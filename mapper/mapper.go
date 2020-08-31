@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/apalchys/protoc-gen-graphql/descriptor"
+	"github.com/apalchys/protoc-gen-graphql/graphql"
 	pb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/golang/protobuf/protoc-gen-go/generator"
-	"github.com/martinxsliu/protoc-gen-graphql/descriptor"
-	"github.com/martinxsliu/protoc-gen-graphql/graphql"
 )
 
 type Mapper struct {
