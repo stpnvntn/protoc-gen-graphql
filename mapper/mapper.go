@@ -226,33 +226,16 @@ func (m *Mapper) buildMessageMapper(message *descriptor.Message, input bool) {
 		mapper.Empty = true
 	}
 
-	// Closure to generate custom description for map types.
-	getComments := func(typeName string) string {
-		if !message.IsMap {
-			return message.Comments
-		}
-		var fieldName string
-		for _, field := range message.Parent.Fields {
-			if field.Proto.GetTypeName() == message.FullName {
-				fieldName = field.Name
-			}
-		}
-		parentTypeName := strings.TrimPrefix(message.Parent.FullName, ".")
-		return fmt.Sprintf("`%s` represents the `%s` map in `%s`.", typeName, fieldName, parentTypeName)
-	}
-
 	typeName := m.ObjectNames[message.FullName]
 	mapper.Object = &graphql.Object{
-		Name:        typeName,
-		Description: getComments(typeName),
-		Fields:      m.graphqlFields(message, false),
+		Name:   typeName,
+		Fields: m.graphqlFields(message, false),
 	}
 	if input {
 		typeName = m.InputNames[message.FullName]
 		mapper.Input = &graphql.Input{
-			Name:        typeName,
-			Description: getComments(typeName),
-			Fields:      m.graphqlFields(message, true),
+			Name:   typeName,
+			Fields: m.graphqlFields(message, true),
 		}
 	}
 
@@ -288,8 +271,7 @@ func (m *Mapper) graphqlFields(message *descriptor.Message, input bool) []*graph
 		if field.IsOneof {
 			oneofObjectName := field.Name + "Oneof"
 			fields = append(fields, &graphql.Field{
-				Name:        m.fieldName(field),
-				Description: field.Comments,
+				Name: m.fieldName(field),
 				TypeName: m.buildGraphqlTypeName(&GraphqlTypeNameParts{
 					Namespace: message.File.Options.GetNamespace(),
 					Package:   message.Package,
@@ -325,8 +307,7 @@ func (m *Mapper) graphqlFields(message *descriptor.Message, input bool) []*graph
 
 func (m *Mapper) graphqlField(f *descriptor.Field, input bool) *graphql.Field {
 	field := &graphql.Field{
-		Name:        m.fieldName(f),
-		Description: f.Comments,
+		Name: m.fieldName(f),
 	}
 	if input {
 		field.Directives = f.Options.GetInputDirective()
@@ -455,12 +436,10 @@ func (m *Mapper) buildOneofMapper(oneof *descriptor.Oneof, input bool) *OneofMap
 		Package:   oneof.Parent.Package,
 		TypeName:  append(oneof.Parent.TypeName, oneofObjectName),
 	})
-	parentProtoName := strings.TrimPrefix(oneof.Parent.FullName, ".")
 	mapper := &OneofMapper{
 		Descriptor: oneof,
 		Union: &graphql.Union{
-			Name:        unionTypeName,
-			Description: fmt.Sprintf("`%s` represents the `%s` oneof in `%s`.", unionTypeName, oneof.Proto.GetName(), parentProtoName),
+			Name: unionTypeName,
 		},
 	}
 
@@ -473,8 +452,7 @@ func (m *Mapper) buildOneofMapper(oneof *descriptor.Oneof, input bool) *OneofMap
 
 		mapper.Union.TypeNames = append(mapper.Union.TypeNames, typeName)
 		mapper.Objects = append(mapper.Objects, &graphql.Object{
-			Name:        typeName,
-			Description: fmt.Sprintf("`%s` represents the `%s` oneof field in `%s`.", typeName, field.Name, parentProtoName),
+			Name: typeName,
 			Fields: []*graphql.Field{
 				// Include _typename field so we can differentiate between messages in a oneof.
 				{
@@ -521,9 +499,8 @@ func (m *Mapper) buildEnumMapper(enum *descriptor.Enum) {
 		}
 
 		enumValue := &graphql.EnumValue{
-			Name:        valueName,
-			Description: value.Comments,
-			Directives:  value.Options.GetDirective(),
+			Name:       valueName,
+			Directives: value.Options.GetDirective(),
 		}
 		if value.Proto.Options.GetDeprecated() {
 			enumValue.Directives = append(enumValue.Directives, "deprecated")
@@ -534,9 +511,8 @@ func (m *Mapper) buildEnumMapper(enum *descriptor.Enum) {
 	m.EnumMappers[enum.FullName] = &EnumMapper{
 		Descriptor: enum,
 		Enum: &graphql.Enum{
-			Name:        m.ObjectNames[enum.FullName],
-			Description: enum.Comments,
-			Values:      enumValues,
+			Name:   m.ObjectNames[enum.FullName],
+			Values: enumValues,
 		},
 	}
 }
@@ -645,9 +621,7 @@ func (m *Mapper) buildMethodsMapper(service *descriptor.Service, rootType string
 
 	return &MethodsMapper{
 		ExtendRootObject: extends,
-		Object: &graphql.Object{
-			Description: service.Comments,
-		},
+		Object:           &graphql.Object{},
 	}
 }
 
@@ -669,11 +643,10 @@ func (m *Mapper) graphqlFieldFromMethod(method *descriptor.Method) *graphql.Fiel
 	}
 
 	field := &graphql.Field{
-		Name:        methodName,
-		Description: method.Comments,
-		TypeName:    m.MessageMappers[method.Proto.GetOutputType()].Object.Name,
-		Arguments:   arguments,
-		Directives:  method.Options.GetDirective(),
+		Name:       methodName,
+		TypeName:   m.MessageMappers[method.Proto.GetOutputType()].Object.Name,
+		Arguments:  arguments,
+		Directives: method.Options.GetDirective(),
 	}
 	if method.Proto.Options.GetDeprecated() {
 		field.Directives = append(field.Directives, "deprecated")
