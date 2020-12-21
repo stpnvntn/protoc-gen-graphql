@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
@@ -81,14 +80,10 @@ func (g *Generator) generateFiles() {
 		for _, message := range file.Messages {
 			m := g.mapper.MessageMappers[message.FullName]
 
-			log.Print(" ")
-			log.Print("START OF ", m.Object.Name)
-
 			if m.Object != nil && len(m.Oneofs) == 0 {
 				gqlTypes = append(gqlTypes, m.Object)
 			}
 			for _, oneof := range m.Oneofs {
-				log.Print("add union gqlType ", oneof.Union.Name)
 				gqlTypes = append(gqlTypes, oneof.Union)
 				for _, object := range oneof.Objects {
 					gqlTypes = append(gqlTypes, object)
@@ -100,12 +95,9 @@ func (g *Generator) generateFiles() {
 			}
 			for _, oneof := range m.Oneofs {
 				if oneof.Input != nil {
-					log.Print("add input gqlType ", oneof.Input.Name)
 					gqlTypes = append(gqlTypes, oneof.Input)
 				}
 			}
-
-			log.Print("END OF ", m.Object.Name)
 		}
 
 		for _, enum := range file.Enums {
